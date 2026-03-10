@@ -1,0 +1,377 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>NMIMS Supervisor Portal — Exam Seating</title>
+  <link rel="stylesheet" href="./style.css" />
+  <script defer src="./script.js"></script>
+</head>
+<body>
+<div id="app">
+
+  <!-- ─── Top Navigation ──────────────────────────────────────── -->
+  <nav class="top-nav">
+    <div class="brand">
+      <div class="brand-logo">NM</div>
+      <div class="brand-text">
+        <strong>SVKM&apos;s NMIMS</strong>
+        <span>Supervisor Portal</span>
+      </div>
+    </div>
+    <div class="nav-actions no-print">
+      <span class="badge badge-gold">Exam Management</span>
+      <button class="btn btn-ghost btn-sm" onclick="window.location.reload()">&#8635; Reset</button>
+    </div>
+  </nav>
+
+  <!-- ─── Page Body ────────────────────────────────────────────── -->
+  <div class="page-body">
+
+    <!-- ─── Sidebar ───────────────────────────────────────────── -->
+    <aside class="sidebar no-print">
+
+      <div class="sidebar-section">
+        <div class="sidebar-title">Exam Configuration</div>
+
+        <div class="form-group">
+          <label class="form-label" for="academicYear">Academic Year</label>
+          <input id="academicYear" class="form-control" type="text" value="2025-26" placeholder="e.g. 2025-26" />
+        </div>
+
+        <div class="form-group">
+          <label class="form-label" for="examType">Exam Type</label>
+          <select id="examType" class="form-control">
+            <option value="Final Exam">Final Exam</option>
+            <option value="Re-Exam">Re-Exam</option>
+            <option value="Mid-Term">Mid-Term</option>
+            <option value="Internal Assessment">Internal Assessment</option>
+          </select>
+        </div>
+
+        <div class="form-group">
+          <label class="form-label" for="totalRows">Total Rows</label>
+          <input id="totalRows" class="form-control" type="number" min="1" max="25" value="6" />
+        </div>
+
+        <div class="form-group">
+          <label class="form-label" for="layoutType">Layout Type</label>
+          <select id="layoutType" class="form-control">
+            <option value="auditorium">Auditorium (Curved)</option>
+            <option value="lab">Computer Lab (Straight)</option>
+            <option value="straight_quad">Straight (3 Path / Quad)</option>
+          </select>
+        </div>
+      </div>
+
+      <div class="sidebar-section">
+        <div class="sidebar-title">Row Seat Layout</div>
+        <div class="row-configs-list" id="rowConfigsList"></div>
+        <button id="updateLayoutBtn" class="btn btn-outline btn-sm" style="width:100%; margin-top:12px; border-color:var(--navy); color:var(--navy);">
+          &#8635; Update Layout
+        </button>
+      </div>
+
+      <div class="sidebar-section">
+        <div class="sidebar-title">Room Selection</div>
+        <div class="form-group room-select-group">
+          <label class="form-label" for="roomSelect">Select Room</label>
+          <select id="roomSelect" class="form-control">
+          </select>
+        </div>
+      </div>
+
+    </aside>
+
+    <!-- ─── Main Content ──────────────────────────────────────── -->
+    <main class="main-content">
+
+      <!-- Upload View -->
+      <div id="uploadView" class="upload-hero fade-up">
+        <div class="upload-hero-header">
+          <div>
+            <div class="page-title">Exam Seating Plan Generator</div>
+            <div class="page-subtitle">Upload roll list and metadata to generate printable supervisor reports</div>
+          </div>
+          <span class="badge badge-navy">A4 Print Ready</span>
+        </div>
+
+        <div class="upload-grid">
+          <!-- Roll List Upload -->
+          <div class="upload-card" id="rollCard">
+            <input type="file" accept=".xlsx,.xls" class="upload-input" id="rollUpload" />
+            <div class="upload-icon">&#128196;</div>
+            <div class="upload-card-title">Roll List (Excel)</div>
+            <div class="upload-card-sub">Contains Roll Number &amp; Programme columns</div>
+            <div class="upload-card-filename" id="rollFilename"></div>
+          </div>
+
+          <!-- Metadata Upload -->
+          <div class="upload-card" id="metaCard">
+            <input type="file" accept=".xlsx,.xls" class="upload-input" id="metaUpload" />
+            <div class="upload-icon">&#128202;</div>
+            <div class="upload-card-title">Metadata (Excel)</div>
+            <div class="upload-card-sub">Contains Room No., Date, Time, Subject details</div>
+            <div class="upload-card-filename" id="metaFilename"></div>
+          </div>
+        </div>
+
+        <!-- Instructions card -->
+        <div style="background:var(--white); border:1px solid var(--gray-200); border-radius:var(--radius-lg); padding:24px; margin-bottom:24px;">
+          <div style="font-size:11px; text-transform:uppercase; letter-spacing:1.2px; color:var(--gray-400); margin-bottom:14px; font-weight:700;">Required File Format</div>
+          <div style="display:grid; grid-template-columns:1fr 1fr; gap:24px;">
+            <div>
+              <div style="font-size:12px; font-weight:700; color:var(--navy); margin-bottom:8px;">&#128196; Roll List Columns</div>
+              <ul style="font-size:12px; color:var(--gray-600); padding-left:16px; line-height:2;">
+                <li><code style="background:var(--gray-100); padding:1px 5px; border-radius:3px;">Roll Number</code></li>
+                <li><code style="background:var(--gray-100); padding:1px 5px; border-radius:3px;">Prg. of Study Name</code></li>
+              </ul>
+            </div>
+            <div>
+              <div style="font-size:12px; font-weight:700; color:var(--navy); margin-bottom:8px;">&#128202; Metadata Columns</div>
+              <ul style="font-size:12px; color:var(--gray-600); padding-left:16px; line-height:2;">
+                <li><code style="background:var(--gray-100); padding:1px 5px; border-radius:3px;">Room No.</code></li>
+                <li><code style="background:var(--gray-100); padding:1px 5px; border-radius:3px;">Roll No.</code> (range e.g. MBA001-MBA050)</li>
+                <li><code style="background:var(--gray-100); padding:1px 5px; border-radius:3px;">Prg. of Study Name</code></li>
+                <li><code style="background:var(--gray-100); padding:1px 5px; border-radius:3px;">Subjects</code>, <code style="background:var(--gray-100); padding:1px 5px; border-radius:3px;">Date</code>, <code style="background:var(--gray-100); padding:1px 5px; border-radius:3px;">Time</code>, <code style="background:var(--gray-100); padding:1px 5px; border-radius:3px;">Sem</code></li>
+              </ul>
+            </div>
+          </div>
+        </div>
+
+        <div class="generate-section">
+          <button id="generateBtn" class="btn btn-gold btn-lg">
+            &#9654; Generate Seating Report
+          </button>
+        </div>
+      </div>
+
+      <!-- Report View (hidden until generated) -->
+      <div id="reportView" style="display:none;" class="report-view">
+
+        <!-- Toolbar -->
+        <div class="report-toolbar no-print">
+          <div class="report-toolbar-left">
+            <button class="btn btn-outline btn-sm" onclick="goBack()">&#8592; Back</button>
+            <span class="room-selector-label">Room:</span>
+            <select id="toolbarRoomSelect" class="form-control" style="width:auto; padding:6px 12px; font-size:13px;"></select>
+          </div>
+          <div class="report-toolbar-right">
+            <button class="btn btn-ghost btn-sm btn-primary" onclick="printReport()" style="background:var(--navy); color:var(--white);">
+              &#128438; Print Report
+            </button>
+          </div>
+        </div>
+
+        <!-- Stats Bar -->
+        <div class="report-doc no-print" style="border-radius:var(--radius-lg); margin-bottom:20px; box-shadow:var(--shadow-sm);">
+          <div class="stats-bar">
+            <div class="stat-cell">
+              <div class="stat-num" id="statTotal">—</div>
+              <div class="stat-label">Students Assigned</div>
+            </div>
+            <div class="stat-cell">
+              <div class="stat-num" id="statSeats">—</div>
+              <div class="stat-label">Total Seats</div>
+            </div>
+            <div class="stat-cell">
+              <div class="stat-num" id="statRows">—</div>
+              <div class="stat-label">Rows</div>
+            </div>
+            <div class="stat-cell">
+              <div class="stat-num stat-accent" id="statOccupancy">—</div>
+              <div class="stat-label">Occupancy</div>
+            </div>
+          </div>
+        </div>
+
+        <!-- ═══════════════════════════════════════════════════════
+             PAGE 1: Seating Plan
+        ════════════════════════════════════════════════════════ -->
+        <div class="report-doc">
+
+          <!-- Header Band -->
+          <div class="report-header-band">
+            <div class="report-header-brand">
+              <div class="inst-name" id="rptInstName">SVKM&apos;S NMIMS</div>
+              <div class="inst-tagline">Narsee Monjee Institute of Management Studies</div>
+            </div>
+            <div class="report-header-meta">
+              <div class="room-badge-lg" id="rptRoom">ROOM: —</div>
+              <div class="doc-type">Supervisor&apos;s Report &amp; Seating Plan</div>
+            </div>
+          </div>
+
+          <!-- Meta Grid -->
+          <div class="report-meta-grid">
+            <div class="meta-cell">
+              <div class="meta-label">Academic Year</div>
+              <div class="meta-value" id="rptAcYear">—</div>
+            </div>
+            <div class="meta-cell">
+              <div class="meta-label">Exam Type</div>
+              <div class="meta-value" id="rptExamType">—</div>
+            </div>
+            <div class="meta-cell">
+              <div class="meta-label">Exam Date</div>
+              <div class="meta-value" id="rptDate">—</div>
+            </div>
+            <div class="meta-cell">
+              <div class="meta-label">Time</div>
+              <div class="meta-value" id="rptTime">—</div>
+            </div>
+            <div class="meta-cell full-width">
+              <div class="meta-label">Absent Marking Convention</div>
+              <div class="meta-value">
+                <span class="absent-note">
+                  Mark absent students as:
+                  <span class="absent-sample">123</span>
+                  (strikethrough the roll number)
+                </span>
+              </div>
+            </div>
+            <div class="meta-cell full-width">
+              <div class="meta-label">Programme(s) of Study</div>
+              <div class="meta-value" id="rptPrg">—</div>
+            </div>
+            <div class="meta-cell full-width">
+              <div class="meta-label">Subject(s)</div>
+              <div class="meta-value" id="rptSubject">—</div>
+            </div>
+            <div class="meta-cell">
+              <div class="meta-label">Semester</div>
+              <div class="meta-value" id="rptSem">—</div>
+            </div>
+            <div class="meta-cell">
+              <div class="meta-label">Total Students</div>
+              <div class="meta-value" id="rptTotal">—</div>
+            </div>
+          </div>
+
+          <!-- Seating Plan Area -->
+          <div class="seating-plan-area">
+            <div class="seating-plan-title">Auditorium Seating Layout</div>
+            <div class="auditorium-wrapper">
+              <div id="seatingGrid"></div>
+              <div class="board">BOARD</div>
+            </div>
+          </div>
+
+          <!-- Accounting Section -->
+          <div class="accounting-section">
+            <div class="accounting-title">Answer Book Accounting</div>
+            <div class="accounting-grid">
+              <div class="acc-block">
+                <div class="acc-block-title">Answer Books</div>
+                <div class="acc-fields">
+                  <div class="acc-field">
+                    <label>Issued</label>
+                    <div class="acc-line"></div>
+                  </div>
+                  <div class="acc-field">
+                    <label>Used</label>
+                    <div class="acc-line"></div>
+                  </div>
+                  <div class="acc-field">
+                    <label>Unused</label>
+                    <div class="acc-line"></div>
+                  </div>
+                </div>
+              </div>
+              <div class="acc-block">
+                <div class="acc-block-title">Supplements</div>
+                <div class="acc-fields">
+                  <div class="acc-field">
+                    <label>Issued</label>
+                    <div class="acc-line"></div>
+                  </div>
+                  <div class="acc-field">
+                    <label>Used</label>
+                    <div class="acc-line"></div>
+                  </div>
+                  <div class="acc-field">
+                    <label>Unused</label>
+                    <div class="acc-line"></div>
+                  </div>
+                </div>
+              </div>
+            </div>
+            <div class="totals-row">
+              <div class="total-block">
+                <div class="total-label">Total Present</div>
+                <div class="total-line"></div>
+              </div>
+              <div class="total-block">
+                <div class="total-label">Total Absent</div>
+                <div class="total-line"></div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Signature Section -->
+          <div class="sig-section">
+            <div class="sig-grid">
+              <div class="sig-item">
+                <div class="sig-label">Supervisor 1</div>
+                <div class="sig-name-line"></div>
+                <div class="sig-meta">
+                  <span>Full Name</span>
+                  <span>Signature: _______________</span>
+                </div>
+              </div>
+              <div class="sig-item">
+                <div class="sig-label">Supervisor 2</div>
+                <div class="sig-name-line"></div>
+                <div class="sig-meta">
+                  <span>Full Name</span>
+                  <span>Signature: _______________</span>
+                </div>
+              </div>
+            </div>
+          </div>
+
+        </div><!-- end .report-doc page 1 -->
+
+        <!-- ═══════════════════════════════════════════════════════
+             PAGE 2: Attendance & Supplement Tally
+        ════════════════════════════════════════════════════════ -->
+        <div class="report-doc-page2">
+
+          <!-- Header Band -->
+          <div class="report-header-band">
+            <div class="report-header-brand">
+              <div class="inst-name">SVKM&apos;S NMIMS</div>
+              <div class="inst-tagline">Student Attendance &amp; Supplement Tally Sheet</div>
+            </div>
+            <div class="report-header-meta">
+              <div class="room-badge-lg" id="p2Room">ROOM: —</div>
+              <div class="doc-type">Attendance Record</div>
+            </div>
+          </div>
+
+          <div class="tally-section">
+            <div class="tally-title">Student Roll Number Register</div>
+            <table class="tally-table">
+              <thead>
+                <tr>
+                  <th class="center" style="width:5%">Sr.</th>
+                  <th>Roll Number</th>
+                  <th class="center" style="width:12%">Supp.</th>
+                  <th class="center col-divider" style="width:5%">Sr.</th>
+                  <th>Roll Number</th>
+                  <th class="center" style="width:12%">Supp.</th>
+                </tr>
+              </thead>
+              <tbody id="tallyBody"></tbody>
+            </table>
+          </div>
+
+        </div><!-- end .report-doc-page2 -->
+
+      </div><!-- end #reportView -->
+
+    </main>
+  </div>
+</div>
+</body>
+</html>
